@@ -10,4 +10,5 @@ public:
 private:
 	static FText GetTitle();
 	static void OnClick(class UStupidMenuScreen* MenuScreen);
+
 };

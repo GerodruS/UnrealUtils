@@ -2,6 +2,7 @@
 
 #include "StupidMenuScreen.h"
 #include "StupidMenuState.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void FExampleMenu::Open(UWorld* World)
 {
@@ -67,10 +68,10 @@ void FExampleMenu::Open(UWorld* World)
 	//   Creating an element from lambdas
 	MainMenuState.Elements.Add(FStupidMenuElement(
 		[] {
-			return FText::FromString(TEXT("Options"));
+			return FText::FromString(TEXT("Lambdas"));
 		},
-		[] (UStupidMenuScreen* MenuScreen){
-			UE_LOG(LogTemp, Error, TEXT("Options Callback"));
+		[] (UStupidMenuScreen* _){
+			UE_LOG(LogTemp, Error, TEXT("Lambdas Callback"));
 		}));
 
 	//   Creating an element from a FText instance and a lambda callback
@@ -78,9 +79,12 @@ void FExampleMenu::Open(UWorld* World)
 		FText::FromString(TEXT("Exit")),
 		[] (UStupidMenuScreen* MenuScreen)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Quitting the Game..."));
-			// TODO: implementation
-			// UKismetSystemLibrary::QuitGame();
+			UE_LOG(LogTemp, Log, TEXT("Quitting the Game..."));
+			UKismetSystemLibrary::QuitGame(
+				MenuScreen->GetWorld(),
+				MenuScreen->GetWorld()->GetFirstPlayerController(),
+				EQuitPreference::Type::Quit,
+				false);
 		}));
 
 	// Creating MenuScreen
@@ -91,10 +95,39 @@ void FExampleMenu::Open(UWorld* World)
 
 FText FExampleMenu::GetTitle()
 {
-	return FText::FromString(TEXT("Static Functions Option Name"));
+	return FText::FromString(TEXT("Options"));
 }
 
 void FExampleMenu::OnClick(UStupidMenuScreen* MenuScreen)
 {
-	UE_LOG(LogTemp, Error, TEXT("Static Functions Callback"));
+	FStupidMenuState NewGameState(FText::FromString(TEXT("New Game")));
+	NewGameState.Elements.Add(FStupidMenuElement(
+			FText::FromString(TEXT("Video")),
+			[] (UStupidMenuScreen* _)
+			{
+				UE_LOG(LogTemp, Log, TEXT("'Video' Button Callback"));
+			}));
+	NewGameState.Elements.Add(FStupidMenuElement(
+			FText::FromString(TEXT("Audio")),
+			[] (UStupidMenuScreen* _)
+			{
+				UE_LOG(LogTemp, Log, TEXT("'Audio' Button Callback"));
+			}));
+	NewGameState.Elements.Add(FStupidMenuElement(
+			FText::FromString(TEXT("Controls")),
+			[] (UStupidMenuScreen* _)
+			{
+				UE_LOG(LogTemp, Log, TEXT("'Controls' Button Callback"));
+			}));
+
+	NewGameState.Elements.Add(FStupidMenuElement::Empty);
+
+	NewGameState.Elements.Add(FStupidMenuElement(
+			FText::FromString(TEXT("Back")),
+			[] (UStupidMenuScreen* MenuScreen)
+			{
+				MenuScreen->PopState();
+			}));
+
+	MenuScreen->PushState(NewGameState);
 }
