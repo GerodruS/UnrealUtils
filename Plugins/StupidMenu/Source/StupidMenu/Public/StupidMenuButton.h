@@ -16,6 +16,7 @@ public:
 
 public:
 	void SetText(FText InText);
+	void Select(); // TODO: rename method/use SetFocus functional
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;

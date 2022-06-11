@@ -85,6 +85,8 @@ void UStupidMenuScreen::RedrawElements()
 		UStupidMenuButton* const MenuButton = MenuButtons[i];
 		MenuButton->SetVisibility(ESlateVisibility::Hidden);
 	}
+
+	MenuButtons[0]->Select();
 }
 
 TSharedRef<SWidget> UStupidMenuScreen::RebuildWidget()
@@ -135,7 +137,9 @@ void UStupidMenuScreen::NativeConstruct()
 
 void UStupidMenuScreen::OnButtonClick(const UStupidMenuButton* const Button)
 {
-	if (const int32 Index = MenuButtons.IndexOfByKey(Button); Index != INDEX_NONE)
+	using SizeType = TArray<UStupidMenuButton*>::SizeType;
+
+	if (const SizeType Index = MenuButtons.IndexOfByKey(Button); Index != INDEX_NONE)
 	{
 		if (FStupidMenuState* CurrentState; GetCurrentState(CurrentState))
 		{

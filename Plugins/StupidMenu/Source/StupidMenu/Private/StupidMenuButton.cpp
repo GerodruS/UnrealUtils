@@ -11,6 +11,11 @@ void UStupidMenuButton::SetText(FText InText)
 	Text->SetText(InText);
 }
 
+void UStupidMenuButton::Select()
+{
+	Button->SetKeyboardFocus();
+}
+
 TSharedRef<SWidget> UStupidMenuButton::RebuildWidget()
 {
 	UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget());
