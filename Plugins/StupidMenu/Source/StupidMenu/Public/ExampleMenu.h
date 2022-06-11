@@ -9,5 +9,5 @@ public:
 
 private:
 	static FText GetTitle();
-	static void OnClick();
+	static void OnClick(class UStupidMenuScreen* MenuScreen);
 };

@@ -3,7 +3,7 @@
 #include "StupidMenuElement.generated.h"
 
 DECLARE_DELEGATE_RetVal(FText, FStupidMenuElementTitleDelegate)
-DECLARE_DELEGATE(FStupidMenuElementCallbackDelegate);
+DECLARE_DELEGATE_OneParam(FStupidMenuElementCallbackDelegate, class UStupidMenuScreen*);
 
 USTRUCT()
 struct STUPIDMENU_API FStupidMenuElement
@@ -23,11 +23,11 @@ struct STUPIDMENU_API FStupidMenuElement
 
 	FStupidMenuElement(
 		TFunctionRef<FText ()> OnGetTitle,
-		TFunctionRef<void ()> OnClick);
+		TFunctionRef<void (class UStupidMenuScreen*)> OnClick);
 
 	FStupidMenuElement(
 		FText Title,
-		TFunctionRef<void ()> OnClick);
+		TFunctionRef<void (class UStupidMenuScreen*)> OnClick);
 
 	bool IsEmpty() const;
 };

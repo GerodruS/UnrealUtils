@@ -13,48 +13,80 @@ void FExampleMenu::Open(UWorld* World)
 	World->GetFirstPlayerController()->SetShowMouseCursor(true);
 
 	// Construct MenuState
-	FStupidMenuState State(FText::FromString(TEXT("Main Menu")));
+	FStupidMenuState MainMenuState(FText::FromString(TEXT("Main Menu")));
 
 	//   Creating an element from delegates
 	FStupidMenuElementTitleDelegate HostTitleDelegate;
-	HostTitleDelegate.BindLambda([] {
-		return FText::FromString(TEXT("Delegates Option Name"));
+	HostTitleDelegate.BindLambda([]
+	{
+		return FText::FromString(TEXT("New Game"));
 	});
 	FStupidMenuElementCallbackDelegate HostCallbackDelegate;
-	HostCallbackDelegate.BindLambda([] {
-		UE_LOG(LogTemp, Error, TEXT("Delegates Callback"));
+	HostCallbackDelegate.BindLambda([] (UStupidMenuScreen* MenuScreen)
+	{
+		FStupidMenuState NewGameState(FText::FromString(TEXT("New Game")));
+		NewGameState.Elements.Add(FStupidMenuElement(
+				FText::FromString(TEXT("Easy")),
+				[] (UStupidMenuScreen* _)
+				{
+					UE_LOG(LogTemp, Log, TEXT("'Easy' Button Callback"));
+				}));
+		NewGameState.Elements.Add(FStupidMenuElement(
+				FText::FromString(TEXT("Medium")),
+				[] (UStupidMenuScreen* _)
+				{
+					UE_LOG(LogTemp, Log, TEXT("'Medium' Button Callback"));
+				}));
+		NewGameState.Elements.Add(FStupidMenuElement(
+				FText::FromString(TEXT("Rare (:")),
+				[] (UStupidMenuScreen* _)
+				{
+					UE_LOG(LogTemp, Log, TEXT("'Rare' Button Callback"));
+				}));
+		NewGameState.Elements.Add(FStupidMenuElement::Empty);
+		NewGameState.Elements.Add(FStupidMenuElement(
+				FText::FromString(TEXT("Back")),
+				[] (UStupidMenuScreen* MenuScreen)
+				{
+					MenuScreen->PopState();
+				}));
+
+		MenuScreen->PushState(NewGameState);
 	});
-	State.Elements.Add(FStupidMenuElement(HostTitleDelegate, HostCallbackDelegate));
+	MainMenuState.Elements.Add(FStupidMenuElement(HostTitleDelegate, HostCallbackDelegate));
 
 	//   Adding an empty element -- it's a gap
-	State.Elements.Add(FStupidMenuElement::Empty);
+	MainMenuState.Elements.Add(FStupidMenuElement::Empty);
+	MainMenuState.Elements.Add(FStupidMenuElement::Empty);
 
 	//   Creating an element from static functions references
-	State.Elements.Add(FStupidMenuElement(
+	MainMenuState.Elements.Add(FStupidMenuElement(
 		FExampleMenu::GetTitle,
 		FExampleMenu::OnClick));
 
 	//   Creating an element from lambdas
-	State.Elements.Add(FStupidMenuElement(
+	MainMenuState.Elements.Add(FStupidMenuElement(
 		[] {
-			return FText::FromString(TEXT("Lambdas Option Name"));
+			return FText::FromString(TEXT("Options"));
 		},
-		[] {
-			UE_LOG(LogTemp, Error, TEXT("Lambdas Callback"));
+		[] (UStupidMenuScreen* MenuScreen){
+			UE_LOG(LogTemp, Error, TEXT("Options Callback"));
 		}));
 
 	//   Creating an element from a FText instance and a lambda callback
-	State.Elements.Add(FStupidMenuElement(
-		FText::FromString(TEXT("FText instance Option Name")),
-		[]
+	MainMenuState.Elements.Add(FStupidMenuElement(
+		FText::FromString(TEXT("Exit")),
+		[] (UStupidMenuScreen* MenuScreen)
 		{
-			UE_LOG(LogTemp, Error, TEXT("FText instance Callback"));
+			UE_LOG(LogTemp, Error, TEXT("Quitting the Game..."));
+			// TODO: implementation
+			// UKismetSystemLibrary::QuitGame();
 		}));
 
 	// Creating MenuScreen
 	UStupidMenuScreen* StupidMenuScreen = CreateWidget<UStupidMenuScreen>(World, UStupidMenuScreen::StaticClass());
 	StupidMenuScreen->AddToViewport();
-	StupidMenuScreen->PushNewState(State);
+	StupidMenuScreen->PushState(MainMenuState);
 }
 
 FText FExampleMenu::GetTitle()
@@ -62,7 +94,7 @@ FText FExampleMenu::GetTitle()
 	return FText::FromString(TEXT("Static Functions Option Name"));
 }
 
-void FExampleMenu::OnClick()
+void FExampleMenu::OnClick(UStupidMenuScreen* MenuScreen)
 {
 	UE_LOG(LogTemp, Error, TEXT("Static Functions Callback"));
 }

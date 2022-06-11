@@ -10,8 +10,10 @@ class STUPIDMENU_API UStupidMenuScreen : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	void PushNewState(const struct FStupidMenuState& State);
+	void PushState(const struct FStupidMenuState& State);
+	void PopState();
 	void RedrawElements();
+	void Close();
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;

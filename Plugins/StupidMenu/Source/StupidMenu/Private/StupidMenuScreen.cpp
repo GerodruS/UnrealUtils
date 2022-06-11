@@ -13,7 +13,7 @@ constexpr int32 RowCount = 3;
 constexpr int32 ColumnCount = 5;
 constexpr int32 OptionButtonsCount = 15;
 
-void UStupidMenuScreen::PushNewState(const FStupidMenuState& State)
+void UStupidMenuScreen::PushState(const FStupidMenuState& State)
 {
 	StatesStack.Add(State);
 
@@ -21,6 +21,35 @@ void UStupidMenuScreen::PushNewState(const FStupidMenuState& State)
 	// PathText->SetText(State.Title);
 
 	RedrawElements();
+}
+
+void UStupidMenuScreen::PopState()
+{
+	if (StatesStack.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("There is no state!"));
+		return;
+	}
+
+	using SizeType = TArray<FStupidMenuState>::SizeType;
+
+	const SizeType LastIndex = StatesStack.Num() - 1;
+	StatesStack.RemoveAt(LastIndex, 1, false);
+
+	if (StatesStack.IsEmpty())
+	{
+		Close();
+	}
+	else
+	{
+		RedrawElements();
+	}
+}
+
+void UStupidMenuScreen::Close()
+{
+	// TODO: implementation
+	UE_LOG(LogTemp, Error, TEXT("UStupidMenuScreen::Close"));
 }
 
 void UStupidMenuScreen::RedrawElements()
@@ -112,10 +141,9 @@ void UStupidMenuScreen::OnButtonClick(const UStupidMenuButton* const Button)
 		{
 			if (CurrentState->Elements.IsValidIndex(Index))
 			{
-				const FStupidMenuElement& Element = CurrentState->Elements[Index];
-				if (Element.OnClick.IsBound())
+				if (const FStupidMenuElement& Element = CurrentState->Elements[Index]; Element.OnClick.IsBound())
 				{
-					Element.OnClick.Execute();
+					Element.OnClick.Execute(this);
 				}
 				else
 				{

@@ -19,7 +19,7 @@ FStupidMenuElement::FStupidMenuElement(
 
 FStupidMenuElement::FStupidMenuElement(
 	TFunctionRef<FText()> OnGetTitle,
-	TFunctionRef<void()> OnClick
+	TFunctionRef<void(UStupidMenuScreen*)> OnClick
 	)
 	: FStupidMenuElement()
 {
@@ -29,7 +29,7 @@ FStupidMenuElement::FStupidMenuElement(
 
 FStupidMenuElement::FStupidMenuElement(
 	FText Title,
-	TFunctionRef<void()> OnClick
+	TFunctionRef<void(UStupidMenuScreen*)> OnClick
 	)
 	: FStupidMenuElement()
 {
