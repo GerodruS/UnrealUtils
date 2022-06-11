@@ -9,6 +9,10 @@ class STUPIDMENU_API UStupidMenuScreen : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	void PushNewState(const struct FStupidMenuState& State);
+	void RedrawElements();
+
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
@@ -21,8 +25,12 @@ private:
 	UPROPERTY()
 	TArray<class UStupidMenuButton*> MenuButtons;
 
+	UPROPERTY()
+	TArray<struct FStupidMenuState> StatesStack;
+
 private:
 	UFUNCTION()
 	void OnButtonClick(const class UStupidMenuButton* const Button);
 
+	bool GetCurrentState(FStupidMenuState*& CurrentState);
 };

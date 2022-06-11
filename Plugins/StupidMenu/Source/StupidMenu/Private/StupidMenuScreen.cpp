@@ -1,6 +1,8 @@
 ﻿#include "StupidMenuScreen.h"
 
 #include "StupidMenuButton.h"
+#include "StupidMenuElement.h"
+#include "StupidMenuState.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
@@ -10,6 +12,51 @@
 constexpr int32 RowCount = 3;
 constexpr int32 ColumnCount = 5;
 constexpr int32 OptionButtonsCount = 15;
+
+void UStupidMenuScreen::PushNewState(const FStupidMenuState& State)
+{
+	StatesStack.Add(State);
+
+	// // TODO: whole path, not only title
+	// PathText->SetText(State.Title);
+
+	RedrawElements();
+}
+
+void UStupidMenuScreen::RedrawElements()
+{
+	if (StatesStack.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("There is no state!"));
+		return;
+	}
+
+	const FStupidMenuState& State = StatesStack.Last();
+	const TArray<FStupidMenuElement>& CheatElements = State.Elements;
+
+	const int32 ButtonsCount = MenuButtons.Num();
+	const int32 Count = FMath::Min(ButtonsCount, CheatElements.Num());
+	for (int32 i = 0; i < Count; ++i)
+	{
+		const FStupidMenuElement& Element = CheatElements[i];
+		UStupidMenuButton* const MenuButton = MenuButtons[i];
+		if (Element.IsEmpty())
+		{
+			MenuButton->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else
+		{
+			const FText Title = Element.OnGetTitle.Execute();
+			MenuButton->SetText(Title);
+			MenuButton->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	for (int32 i = Count; i < ButtonsCount; ++i)
+	{
+		UStupidMenuButton* const MenuButton = MenuButtons[i];
+		MenuButton->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
 
 TSharedRef<SWidget> UStupidMenuScreen::RebuildWidget()
 {
@@ -59,9 +106,41 @@ void UStupidMenuScreen::NativeConstruct()
 
 void UStupidMenuScreen::OnButtonClick(const UStupidMenuButton* const Button)
 {
-	if (const int32 Index = MenuButtons.IndexOfByKey(Button);
-		Index != INDEX_NONE)
+	if (const int32 Index = MenuButtons.IndexOfByKey(Button); Index != INDEX_NONE)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[TEST] UStupidMenuScreen::OnButtonClick button#%d Clicked!"), Index);
+		if (FStupidMenuState* CurrentState; GetCurrentState(CurrentState))
+		{
+			if (CurrentState->Elements.IsValidIndex(Index))
+			{
+				const FStupidMenuElement& Element = CurrentState->Elements[Index];
+				Element.OnClick.Execute();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Invalid element click!"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("There is no state!"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Button not found!"));
+	}
+}
+
+bool UStupidMenuScreen::GetCurrentState(FStupidMenuState*& CurrentState)
+{
+	if (StatesStack.IsEmpty())
+	{
+		CurrentState = nullptr;
+		return false;
+	}
+	else
+	{
+		CurrentState = &StatesStack.Last();
+		return true;
 	}
 }

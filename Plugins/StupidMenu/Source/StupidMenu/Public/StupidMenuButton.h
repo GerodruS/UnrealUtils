@@ -14,6 +14,9 @@ class STUPIDMENU_API UStupidMenuButton : public UUserWidget
 public:
 	FOnStupidMenuButtonClickedEvent OnClicked;
 
+public:
+	void SetText(FText InText);
+
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 

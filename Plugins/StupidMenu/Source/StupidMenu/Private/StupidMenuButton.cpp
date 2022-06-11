@@ -6,6 +6,11 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/TextBlock.h"
 
+void UStupidMenuButton::SetText(FText InText)
+{
+	Text->SetText(InText);
+}
+
 TSharedRef<SWidget> UStupidMenuButton::RebuildWidget()
 {
 	UPanelWidget* RootWidget = Cast<UPanelWidget>(GetRootWidget());
