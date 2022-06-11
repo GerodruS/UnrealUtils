@@ -15,53 +15,54 @@ void FExampleMenu::Open(UWorld* World)
 	// Construct MenuState
 	FStupidMenuState State(FText::FromString(TEXT("Main Menu")));
 
-	//   Creating delegates from lambdas
-	{
-		FStupidMenuElementTitleDelegate HostTitleDelegate;
-		HostTitleDelegate.BindLambda([]
+	//   Creating an element from delegates
+	FStupidMenuElementTitleDelegate HostTitleDelegate;
+	HostTitleDelegate.BindLambda([] {
+		return FText::FromString(TEXT("Delegates Option Name"));
+	});
+	FStupidMenuElementCallbackDelegate HostCallbackDelegate;
+	HostCallbackDelegate.BindLambda([] {
+		UE_LOG(LogTemp, Error, TEXT("Delegates Callback"));
+	});
+	State.Elements.Add(FStupidMenuElement(HostTitleDelegate, HostCallbackDelegate));
+
+	//   Adding an empty element -- it's a gap
+	State.Elements.Add(FStupidMenuElement::Empty);
+
+	//   Creating an element from static functions references
+	State.Elements.Add(FStupidMenuElement(
+		FExampleMenu::GetTitle,
+		FExampleMenu::OnClick));
+
+	//   Creating an element from lambdas
+	State.Elements.Add(FStupidMenuElement(
+		[] {
+			return FText::FromString(TEXT("Lambdas Option Name"));
+		},
+		[] {
+			UE_LOG(LogTemp, Error, TEXT("Lambdas Callback"));
+		}));
+
+	//   Creating an element from a FText instance and a lambda callback
+	State.Elements.Add(FStupidMenuElement(
+		FText::FromString(TEXT("FText instance Option Name")),
+		[]
 		{
-			return FText::FromString(TEXT("Host"));
-		});
-
-		FStupidMenuElementCallbackDelegate HostCallbackDelegate;
-		HostCallbackDelegate.BindLambda([]
-		{
-			UE_LOG(LogTemp, Error, TEXT("HOST"));
-		});
-
-		State.Elements.Add(FStupidMenuElement(
-			HostTitleDelegate,
-			HostCallbackDelegate));
-	}
-
-	//   Creating a empty element -- it's a gap
-	State.Elements.Add(FStupidMenuElement());
-
-	//   Creating delegates from static functions
-	{
-		FStupidMenuElementTitleDelegate HostTitleDelegate;
-		HostTitleDelegate.BindStatic(FExampleMenu::GetTitle);
-
-		FStupidMenuElementCallbackDelegate HostCallbackDelegate;
-		HostCallbackDelegate.BindStatic(FExampleMenu::OnClick);
-
-		State.Elements.Add(FStupidMenuElement(
-			HostTitleDelegate,
-			HostCallbackDelegate));
-	}
+			UE_LOG(LogTemp, Error, TEXT("FText instance Callback"));
+		}));
 
 	// Creating MenuScreen
 	UStupidMenuScreen* StupidMenuScreen = CreateWidget<UStupidMenuScreen>(World, UStupidMenuScreen::StaticClass());
-	StupidMenuScreen->PushNewState(State);
 	StupidMenuScreen->AddToViewport();
+	StupidMenuScreen->PushNewState(State);
 }
 
 FText FExampleMenu::GetTitle()
 {
-	return FText::FromString(TEXT("Host 2"));
+	return FText::FromString(TEXT("Static Functions Option Name"));
 }
 
 void FExampleMenu::OnClick()
 {
-	UE_LOG(LogTemp, Error, TEXT("HOST 2"));
+	UE_LOG(LogTemp, Error, TEXT("Static Functions Callback"));
 }

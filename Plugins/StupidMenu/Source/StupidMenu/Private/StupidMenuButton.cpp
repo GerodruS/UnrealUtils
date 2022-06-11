@@ -37,6 +37,7 @@ TSharedRef<SWidget> UStupidMenuButton::RebuildWidget()
 		Text = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
 		Text->SetJustification(ETextJustify::Center);
 		Text->SetVisibility(ESlateVisibility::HitTestInvisible);
+		Text->SetAutoWrapText(true);
 		RootWidget->AddChild(Text);
 
 		if (UCanvasPanelSlot* const TextPanelSlot = Cast<UCanvasPanelSlot>(Text->Slot);

@@ -113,7 +113,14 @@ void UStupidMenuScreen::OnButtonClick(const UStupidMenuButton* const Button)
 			if (CurrentState->Elements.IsValidIndex(Index))
 			{
 				const FStupidMenuElement& Element = CurrentState->Elements[Index];
-				Element.OnClick.Execute();
+				if (Element.OnClick.IsBound())
+				{
+					Element.OnClick.Execute();
+				}
+				else
+				{
+					UE_LOG(LogTemp, Error, TEXT("Element OnClick delegate has no bound!"));
+				}
 			}
 			else
 			{

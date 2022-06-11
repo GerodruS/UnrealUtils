@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-// #include "ExampleMenu.generated.h"
 
 class STUPIDMENU_API FExampleMenu
 {
