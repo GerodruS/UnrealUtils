@@ -9,9 +9,9 @@
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
 
-constexpr int32 RowCount = 3;
-constexpr int32 ColumnCount = 5;
-constexpr int32 OptionButtonsCount = 15;
+constexpr size_t RowCount = 5;
+constexpr size_t ColumnCount = 3;
+constexpr size_t OptionButtonsCount = RowCount * ColumnCount;
 
 void UStupidMenuScreen::PushState(const FStupidMenuState& State)
 {
@@ -52,7 +52,7 @@ void UStupidMenuScreen::Close()
 	UE_LOG(LogTemp, Error, TEXT("UStupidMenuScreen::Close"));
 }
 
-void UStupidMenuScreen::RedrawElements()
+void UStupidMenuScreen::RedrawElements(const size_t NewIndexOffset)
 {
 	if (StatesStack.IsEmpty())
 	{
@@ -60,30 +60,28 @@ void UStupidMenuScreen::RedrawElements()
 		return;
 	}
 
+	IndexOffset = NewIndexOffset;
 	const FStupidMenuState& State = StatesStack.Last();
 	const TArray<FStupidMenuElement>& CheatElements = State.Elements;
 
-	const int32 ButtonsCount = MenuButtons.Num();
-	const int32 Count = FMath::Min(ButtonsCount, CheatElements.Num());
-	for (int32 i = 0; i < Count; ++i)
+	const size_t ButtonsCount = MenuButtons.Num();
+	const size_t Count = FMath::Min(ButtonsCount, static_cast<size_t>(CheatElements.Num()) - NewIndexOffset);
+	for (size_t i = 0; i < Count; ++i)
 	{
-		const FStupidMenuElement& Element = CheatElements[i];
-		UStupidMenuButton* const MenuButton = MenuButtons[i];
+		const FStupidMenuElement& Element = CheatElements[i + NewIndexOffset];
 		if (Element.IsEmpty())
 		{
-			MenuButton->SetVisibility(ESlateVisibility::Hidden);
+			MenuButtons[i]->Hide();
 		}
 		else
 		{
 			const FText Title = Element.OnGetTitle.Execute();
-			MenuButton->SetText(Title);
-			MenuButton->SetVisibility(ESlateVisibility::Visible);
+			MenuButtons[i]->SetText(Title);
 		}
 	}
-	for (int32 i = Count; i < ButtonsCount; ++i)
+	for (size_t i = Count; i < ButtonsCount; ++i)
 	{
-		UStupidMenuButton* const MenuButton = MenuButtons[i];
-		MenuButton->SetVisibility(ESlateVisibility::Hidden);
+		MenuButtons[i]->Hide();
 	}
 
 	MenuButtons[0]->Select();
@@ -119,8 +117,8 @@ TSharedRef<SWidget> UStupidMenuScreen::RebuildWidget()
 
 			MenuButtons.Add(ButtonWithText);
 
-			const int32 Row = i / RowCount;
-			const int32 InColumn = i % RowCount;
+			const int32 Row = i / ColumnCount;
+			const int32 InColumn = i % ColumnCount;
 			UUniformGridSlot* const GridSlot = ButtonsGripPanel->AddChildToUniformGrid(ButtonWithText, Row, InColumn);
 			GridSlot->SetHorizontalAlignment(HAlign_Fill);
 			GridSlot->SetVerticalAlignment(VAlign_Fill);
@@ -133,6 +131,25 @@ TSharedRef<SWidget> UStupidMenuScreen::RebuildWidget()
 void UStupidMenuScreen::NativeConstruct()
 {
 	Super::NativeConstruct();
+	SetVisibility(ESlateVisibility::Visible);
+}
+
+FReply UStupidMenuScreen::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (const float CurrentTime = GetWorld()->GetTimeSeconds();
+		LastWheelTime <= CurrentTime)
+	{
+		constexpr float WheelTimeDelay = 0.25f;
+		LastWheelTime = CurrentTime + WheelTimeDelay;
+
+		const float WheelDelta = -InMouseEvent.GetWheelDelta();
+		const size_t NewIndexOffset = ColumnCount * FMath::Sign(WheelDelta) + IndexOffset;
+		if (CheckIndex(NewIndexOffset))
+		{
+			RedrawElements(NewIndexOffset);
+		}
+	}
+	return Super::NativeOnMouseWheel(InGeometry, InMouseEvent);
 }
 
 void UStupidMenuScreen::OnButtonClick(const UStupidMenuButton* const Button)
@@ -182,4 +199,11 @@ bool UStupidMenuScreen::GetCurrentState(FStupidMenuState*& CurrentState)
 		CurrentState = &StatesStack.Last();
 		return true;
 	}
+}
+
+bool UStupidMenuScreen::CheckIndex(const size_t Index)
+{
+	FStupidMenuState* CurrentState;
+	return GetCurrentState(CurrentState) &&
+		   CurrentState->Elements.IsValidIndex(Index);
 }

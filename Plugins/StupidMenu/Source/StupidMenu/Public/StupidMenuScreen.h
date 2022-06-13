@@ -12,13 +12,14 @@ class STUPIDMENU_API UStupidMenuScreen : public UUserWidget
 public:
 	void PushState(const struct FStupidMenuState& State);
 	void PopState();
-	void RedrawElements();
+	void RedrawElements(const size_t NewIndexOffset = 0);
 	void Close();
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 
 	virtual void NativeConstruct() override;
+	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 private:
 	UPROPERTY()
@@ -30,9 +31,13 @@ private:
 	UPROPERTY()
 	TArray<struct FStupidMenuState> StatesStack;
 
+	size_t IndexOffset = 0;
+	float LastWheelTime = 0.0f;
+
 private:
 	UFUNCTION()
 	void OnButtonClick(const class UStupidMenuButton* const Button);
 
 	bool GetCurrentState(FStupidMenuState*& CurrentState);
+	bool CheckIndex(const size_t Index);
 };

@@ -16,6 +16,7 @@ public:
 
 public:
 	void SetText(FText InText);
+	void Hide();
 	void Select(); // TODO: rename method/use SetFocus functional
 
 protected:

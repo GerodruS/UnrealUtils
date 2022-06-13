@@ -9,6 +9,12 @@
 void UStupidMenuButton::SetText(FText InText)
 {
 	Text->SetText(InText);
+	SetVisibility(ESlateVisibility::Visible);
+}
+
+void UStupidMenuButton::Hide()
+{
+	SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UStupidMenuButton::Select()
